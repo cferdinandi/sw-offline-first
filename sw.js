@@ -42,4 +42,25 @@ addEventListener('fetch', function (event) {
 		);
 	}
 
+	// Images & Fonts
+	// Offline-first
+	if (request.headers.get('Accept').includes('image')) {
+		event.respondWith(
+			caches.match(request).then(function (response) {
+				return response || fetch(request).then(function (response) {
+
+					// Stash a copy of this image in the images cache
+					var copy = response.clone();
+					event.waitUntil(caches.open('images').then(function (cache) {
+						return cache.put(request, copy);
+					}));
+
+					// Return the requested file
+					return response;
+
+				});
+			})
+		);
+	}
+
 });
